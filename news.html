@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Send Keyword</title>
+</head>
+<body>
+<h2>Send Keyword</h2>
+<form id="keywordForm">
+  <label for="keyword">Keyword:</label><br>
+  <input type="text" id="keyword" name="keyword"><br><br>
+  <button type="submit">Send</button>
+</form>
+
+<div id="resultContainer" style="display:none;">
+  <h2>Results</h2>
+  <div id="articles"></div>
+</div>
+
+<script>
+document.getElementById("keywordForm").addEventListener("submit", function(event) {
+  event.preventDefault();
+  
+  var keyword = document.getElementById("keyword").value;
+  
+  fetch('http://13.233.83.174:5678/webhook/083b98e2-76a5-44c8-bf4c-86d9e851a4fa', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ "keyword": keyword }),
+  })
+  .then(response => {
+    if (response.ok) {
+      return response.json();
+    } else {
+      throw new Error('Failed to send keyword');
+    }
+  })
+  .then(data => {
+    // Display the result in the webpage
+    displayArticles(data);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert("An error occurred while sending the keyword. Please try again later.");
+  });
+});
+
+function displayArticles(data) {
+  var articlesContainer = document.getElementById("articles");
+  articlesContainer.innerHTML = ''; // Clear previous articles
+
+  for (var key in data) {
+    if (data.hasOwnProperty(key)) {
+      var article = data[key];
+
+      var articleElement = document.createElement("div");
+      articleElement.classList.add("article");
+
+      var headingElement = document.createElement("h3");
+      headingElement.textContent = article.heading;
+      articleElement.appendChild(headingElement);
+
+      var textElement = document.createElement("p");
+      textElement.textContent = article.text;
+      articleElement.appendChild(textElement);
+
+      var linkElement = document.createElement("a");
+      linkElement.textContent = "Read More";
+      linkElement.href = article.link;
+      linkElement.target = "_blank"; // Open link in a new tab
+      articleElement.appendChild(linkElement);
+
+      articlesContainer.appendChild(articleElement);
+    }
+  }
+
+  // Show the results container
+  document.getElementById("resultContainer").style.display = "block";
+}
+</script>
+</body>
+</html>
